@@ -32,6 +32,11 @@ Ws.namespace('/')
   .connected('ActivityController.onConnected')
   .disconnected('ActivityController.onDisconnected')
 
+Ws.namespace('channels')
+  .on('loadChannels', 'ChannelController.loadChannels')
+  .on('joinChannel', 'ChannelController.joinChannel')
+  .on('quitChannel', 'ChannelController.quitChannel')
+
 Ws.namespace('channels/:name')
   .on('loadMessages', 'MessageController.loadMessages')
   .on('addMessage', 'MessageController.addMessage')
