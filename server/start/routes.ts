@@ -28,6 +28,10 @@ Route.group(() => {
   Route.get('me', 'AuthController.me').middleware('auth')
 }).prefix('auth')
 
+Ws.namespace('/')
+  .connected('ActivityController.onConnected')
+  .disconnected('ActivityController.onDisconnected')
+
 Ws.namespace('channels/:name')
   .on('loadMessages', 'MessageController.loadMessages')
   .on('addMessage', 'MessageController.addMessage')
