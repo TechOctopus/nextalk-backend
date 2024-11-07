@@ -58,6 +58,9 @@ export default class User extends BaseModel {
   })
   public sentMessages: HasMany<typeof Message>
 
+  @manyToMany(() => Message)
+  declare mentions: ManyToMany<typeof Message>
+
   @manyToMany(() => Channel)
   public channels: ManyToMany<typeof Channel>
 }
