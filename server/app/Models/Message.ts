@@ -1,5 +1,12 @@
 import { DateTime } from 'luxon'
-import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
+import {
+  BaseModel,
+  BelongsTo,
+  belongsTo,
+  column,
+  manyToMany,
+  ManyToMany,
+} from '@ioc:Adonis/Lucid/Orm'
 import User from 'App/Models/User'
 import Channel from 'App/Models/Channel'
 
@@ -8,10 +15,10 @@ export default class Message extends BaseModel {
   public id: number
 
   @column()
-  public createdBy: number
+  public channelId: number
 
   @column()
-  public channelId: number
+  public createdBy: number
 
   @column()
   public content: string
@@ -31,4 +38,7 @@ export default class Message extends BaseModel {
     foreignKey: 'channelId',
   })
   public channel: BelongsTo<typeof Channel>
+
+  @manyToMany(() => User)
+  declare mentions: ManyToMany<typeof User>
 }
