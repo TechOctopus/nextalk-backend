@@ -1,8 +1,16 @@
 import type { WsContextContract } from '@ioc:Ruby184/Socket.IO/WsContext'
 import Channel from 'App/Models/Channel'
+import User from 'App/Models/User'
 
 export default class ChannelController {
-  public async loadChannels({ auth }: WsContextContract) {
+  private getUserRoom(user: User): string {
+    return `user:${user.id}`
+  }
+
+  public async loadChannels({ socket, auth }: WsContextContract) {
+    const userRoom = this.getUserRoom(auth.user!)
+    socket.join(userRoom)
+
     const channels = await Channel.query()
       .where('adminId', auth.user!.id)
       .orWhereHas('users', (query) => {
@@ -39,8 +47,75 @@ export default class ChannelController {
     return newChannel.serialize()
   }
 
-  public async quitChannel({ socket }: WsContextContract, channelName: string) {
-    // remove user from the channel
-    socket.leave(channelName)
+  public async inviteUser(
+    { socket, auth }: WsContextContract,
+    userName: string,
+    channelId: string
+  ) {
+    const channel = await Channel.findOrFail(channelId)
+
+    if (channel.isPrivate && channel.adminId !== auth.user!.id) {
+      return { error: 'You are not authorized to invite users to this channel' }
+    }
+
+    const user = await User.findByOrFail('username', userName)
+    await channel.related('users').attach([user.id])
+
+    const userRoom = this.getUserRoom(user)
+    socket.to(userRoom).emit('invite', channel.serialize())
+
+    return channel.serialize()
+  }
+
+  public async revokeUser(
+    { socket, auth }: WsContextContract,
+    userName: string,
+    channelId: string
+  ) {
+    const channel = await Channel.findOrFail(channelId)
+
+    if (!channel.isPrivate && channel.adminId !== auth.user!.id) {
+      return { error: 'You are not authorized to revoke users from this channel' }
+    }
+
+    const user = await User.findByOrFail('username', userName)
+    await channel.related('users').detach([user.id])
+
+    const userRoom = this.getUserRoom(user)
+    socket.to(userRoom).emit('revoke', channel.serialize())
+
+    return channel.serialize()
+  }
+
+  public async quitChannel({ socket, auth }: WsContextContract, channelId: string) {
+    const channel = await Channel.query().where('id', channelId).firstOrFail()
+    if (channel.adminId !== auth.user!.id) {
+      return { error: 'You are not authorized to quit this channel' }
+    }
+
+    await Promise.all([
+      channel.related('messages').query().delete(),
+      channel.related('users').detach(),
+    ])
+
+    await channel.delete()
+
+    socket.leave(channel.name)
+    socket.nsp.emit('quit', channel.serialize())
+
+    return channel.serialize()
+  }
+
+  public async cancelChannel({ socket, auth }: WsContextContract, channelId: string) {
+    const channel = await Channel.query().where('id', channelId).firstOrFail()
+    if (channel.adminId === auth.user!.id) {
+      return this.quitChannel({ socket, auth } as WsContextContract, channelId)
+    }
+
+    await channel.related('users').detach([auth.user!.id])
+    socket.leave(channel.name)
+    socket.emit('cancel', channel.serialize())
+
+    return channel.serialize()
   }
 }
