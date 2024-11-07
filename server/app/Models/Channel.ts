@@ -20,10 +20,10 @@ export default class Channel extends BaseModel {
   public name: string
 
   @column()
-  declare isPrivate: boolean
+  public isPrivate: boolean
 
   @column()
-  declare adminId: number
+  public adminId: number
 
   @hasMany(() => Message, {
     foreignKey: 'channelId',
@@ -33,14 +33,9 @@ export default class Channel extends BaseModel {
   @belongsTo(() => User, {
     foreignKey: 'adminId',
   })
-  declare admin: BelongsTo<typeof User>
+  public admin: BelongsTo<typeof User>
 
-  @manyToMany(() => User, {
-    pivotTable: 'channel_users',
-    pivotForeignKey: 'user_id',
-    pivotRelatedForeignKey: 'channel_id',
-    pivotTimestamps: true,
-  })
+  @manyToMany(() => User)
   public users: ManyToMany<typeof User>
 
   @column.dateTime({ autoCreate: true })

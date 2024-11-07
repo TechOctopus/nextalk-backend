@@ -12,9 +12,30 @@ export default class ChannelController {
     return channels.map((channel) => channel.serialize())
   }
 
-  public async joinChannel({ socket }: WsContextContract, channelName: string) {
-    const newChannel = await Channel.create({ name: channelName })
+  public async joinChannel(
+    { socket, auth }: WsContextContract,
+    channelName: string,
+    isPrivate: boolean
+  ) {
+    const channelExists = await Channel.query().where('name', channelName).first()
+
+    if (channelExists) {
+      if (channelExists.isPrivate) {
+        return { error: 'Channel name already taken.' }
+      }
+
+      await channelExists.related('users').attach([auth.user!.id])
+      return channelExists.serialize()
+    }
+
+    const newChannel = await Channel.create({
+      name: channelName,
+      adminId: auth.user!.id,
+      isPrivate,
+    })
+
     socket.join(channelName)
+
     return newChannel.serialize()
   }
 

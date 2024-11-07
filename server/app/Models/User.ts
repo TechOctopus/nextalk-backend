@@ -17,22 +17,22 @@ export default class User extends BaseModel {
   public id: number
 
   @column()
-  declare firstName: string
+  public firstName: string
 
   @column()
-  declare lastName: string
+  public lastName: string
 
   @column()
-  declare username: string
+  public username: string
 
   @column()
   public email: string
 
   @column()
-  declare status: 'online' | 'offline' | 'dnd'
+  public status: 'online' | 'offline' | 'dnd'
 
   @column()
-  declare notification: 'enabled' | 'disabled' | 'mentions'
+  public notification: 'enabled' | 'disabled' | 'mentions'
 
   @column({ serializeAs: null })
   public password: string
@@ -58,11 +58,6 @@ export default class User extends BaseModel {
   })
   public sentMessages: HasMany<typeof Message>
 
-  @manyToMany(() => Channel, {
-    pivotTable: 'channel_users',
-    pivotForeignKey: 'user_id',
-    pivotRelatedForeignKey: 'channel_id',
-    pivotTimestamps: true,
-  })
+  @manyToMany(() => Channel)
   public channels: ManyToMany<typeof Channel>
 }
