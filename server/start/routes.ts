@@ -39,6 +39,7 @@ Ws.namespace('channels')
   .on('cancelChannel', 'ChannelController.cancelChannel')
   .on('inviteUser', 'ChannelController.inviteUser')
   .on('revokeUser', 'ChannelController.revokeUser')
+  .on('kickUser', 'ChannelController.kickUser')
 
 Ws.namespace('channels/:name')
   .on('loadMessages', 'MessageController.loadMessages')

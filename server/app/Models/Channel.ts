@@ -11,6 +11,7 @@ import {
 } from '@ioc:Adonis/Lucid/Orm'
 import Message from 'App/Models/Message'
 import User from 'App/Models/User'
+import Action from 'App/Models/Action'
 
 export default class Channel extends BaseModel {
   @column({ isPrimary: true })
@@ -24,6 +25,11 @@ export default class Channel extends BaseModel {
 
   @column()
   public adminId: number
+
+  @hasMany(() => Action, {
+    foreignKey: 'channelId',
+  })
+  declare actions: HasMany<typeof Action>
 
   @hasMany(() => Message, {
     foreignKey: 'channelId',
