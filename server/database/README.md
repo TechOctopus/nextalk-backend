@@ -16,3 +16,9 @@ If already exists
 DROP DATABASE IF EXISTS nextalk;
 CREATE DATABASE nextalk;
 ```
+
+Seed channels
+
+```bash
+node ace db:seed -f database/seeders/Channel.ts
+```

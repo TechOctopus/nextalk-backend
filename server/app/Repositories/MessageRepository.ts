@@ -4,6 +4,7 @@ import type {
 } from '@ioc:Repositories/MessageRepository'
 import Channel from 'App/Models/Channel'
 import User from 'App/Models/User'
+import Action from 'App/Models/Action'
 
 export default class MessageRepository implements MessageRepositoryContract {
   private parseMentions(message: string): string[] {
@@ -53,7 +54,7 @@ export default class MessageRepository implements MessageRepositoryContract {
     channelName: string,
     userId: number,
     content: string
-  ): Promise<SerializedMessage> {
+  ): Promise<{ message: SerializedMessage; isChannelJoined: boolean }> {
     const channel = await Channel.findByOrFail('name', channelName)
     const message = await channel
       .related('messages')
@@ -77,14 +78,47 @@ export default class MessageRepository implements MessageRepositoryContract {
       )
     }
 
+    // Cheak if user is invited to channel, after that send message it joined
+    const user = await User.find(userId)
+    const action = await Action.query()
+      .where('userId', user!.id)
+      .where('channelId', channel.id)
+      .orderBy('created_at', 'desc')
+      .first()
+
+    if (action?.action === 'invite') {
+      await Action.create({
+        userId: user!.id,
+        performerId: user!.id,
+        channelId: channel.id,
+        action: 'join',
+      })
+
+      return {
+        message: {
+          id: message.id,
+          author: message.author.serialize(),
+          content: message.content,
+          mentions: mentionsUsers,
+          createdAt: message.createdAt.toString(),
+          updatedAt: message.updatedAt.toString(),
+          channelId: channel.id,
+        } as SerializedMessage,
+        isChannelJoined: true,
+      }
+    }
+
     return {
-      id: message.id,
-      author: message.author.serialize(),
-      content: message.content,
-      mentions: mentionsUsers,
-      createdAt: message.createdAt.toString(),
-      updatedAt: message.updatedAt.toString(),
-      channelId: channel.id,
-    } as SerializedMessage
+      message: {
+        id: message.id,
+        author: message.author.serialize(),
+        content: message.content,
+        mentions: mentionsUsers,
+        createdAt: message.createdAt.toString(),
+        updatedAt: message.updatedAt.toString(),
+        channelId: channel.id,
+      } as SerializedMessage,
+      isChannelJoined: false,
+    }
   }
 }
