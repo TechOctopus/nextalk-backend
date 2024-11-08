@@ -11,6 +11,7 @@ import {
 } from '@ioc:Adonis/Lucid/Orm'
 import Channel from 'App/Models/Channel'
 import Message from 'App/Models/Message'
+import Action from 'App/Models/Action'
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
@@ -57,6 +58,16 @@ export default class User extends BaseModel {
     foreignKey: 'createdBy',
   })
   public sentMessages: HasMany<typeof Message>
+
+  @hasMany(() => Action, {
+    foreignKey: 'userId',
+  })
+  declare actions: HasMany<typeof Action>
+
+  @hasMany(() => Action, {
+    foreignKey: 'performerId',
+  })
+  declare performedActions: HasMany<typeof Action>
 
   @manyToMany(() => Message)
   declare mentions: ManyToMany<typeof Message>
