@@ -323,4 +323,18 @@ export default class ChannelController {
 
     return toSend
   }
+
+  public async listUsers({ auth }: WsContextContract, channelId: string) {
+    const channel = await Channel.query().where('id', channelId).firstOrFail()
+    const users = await channel.related('users').query()
+
+    if (channel.adminId !== auth.user!.id && !users.find((user) => user.id === auth.user!.id)) {
+      return { error: 'You are not authorized to list users in this channel' }
+    }
+
+    const admin = await User.findOrFail(channel.adminId)
+    const toSend = users.map((user) => ({ user: user.serialize(), role: 'member' }))
+    toSend.unshift({ user: admin.serialize(), role: 'admin' })
+    return toSend
+  }
 }
