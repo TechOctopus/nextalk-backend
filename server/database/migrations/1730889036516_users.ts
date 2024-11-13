@@ -13,7 +13,7 @@ export default class extends BaseSchema {
       table.string('password', 180).notNullable()
       table.string('remember_me_token').nullable()
       table.enum('status', ['online', 'offline', 'dnd']).defaultTo('online')
-      table.enum('notification', ['enabled', 'disabled', 'mentions']).defaultTo('enabled')
+      table.enum('notifications', ['enabled', 'disabled', 'mentions']).defaultTo('enabled')
       /**
        * Uses timestampz for PostgreSQL and DATETIME2 for MSSQL
        */
