@@ -31,6 +31,7 @@ Route.group(() => {
 Ws.namespace('/')
   .connected('ActivityController.onConnected')
   .disconnected('ActivityController.onDisconnected')
+  .on('userNotifications', 'ActivityController.userNotifications')
 
 Ws.namespace('channels')
   .on('loadChannels', 'ChannelController.loadChannels')

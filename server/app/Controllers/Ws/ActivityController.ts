@@ -49,4 +49,13 @@ export default class ActivityController {
 
     logger.info('websocket disconnected', reason)
   }
+
+  public async userNotifications(
+    { auth }: WsContextContract,
+    notifications: User['notifications']
+  ) {
+    const user = await User.findOrFail(auth.user!.id)
+    user.notifications = notifications
+    await user.save()
+  }
 }

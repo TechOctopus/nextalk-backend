@@ -33,7 +33,7 @@ export default class User extends BaseModel {
   public status: 'online' | 'offline' | 'dnd'
 
   @column()
-  public notification: 'enabled' | 'disabled' | 'mentions'
+  public notifications: 'enabled' | 'disabled' | 'mentions'
 
   @column({ serializeAs: null })
   public password: string
