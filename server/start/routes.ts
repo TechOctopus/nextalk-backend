@@ -46,3 +46,7 @@ Ws.namespace('channels')
 Ws.namespace('channels/:name')
   .on('loadMessages', 'MessageController.loadMessages')
   .on('addMessage', 'MessageController.addMessage')
+
+Ws.namespace('typing/:name')
+  .on('typing', 'TypingController.typing')
+  .on('stopTyping', 'TypingController.stopTyping')
