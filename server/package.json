@@ -1,5 +1,6 @@
 {
   "name": "nextalk-backend",
+  "author": "Heorhi Davydau <heorhid@gmail.com>, Artemii Gurin <arte.gurin@gmail.com>",
   "version": "1.0.0",
   "private": true,
   "scripts": {
