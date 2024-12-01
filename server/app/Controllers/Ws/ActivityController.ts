@@ -7,6 +7,12 @@ export default class ActivityController {
   }
 
   public async onConnected({ socket, auth, logger }: WsContextContract) {
+    const user = await User.findOrFail(auth.user!.id)
+    user.status = 'online'
+    await user.save()
+
+    socket.emit('user:connected')
+
     // all connections for the same authenticated user will be in the room
     const room = this.getUserRoom(auth.user!)
     const userSockets = await socket.in(room).allSockets()
@@ -38,6 +44,10 @@ export default class ActivityController {
 
   // see https://socket.io/get-started/private-messaging-part-2/#disconnection-handler
   public async onDisconnected({ socket, auth, logger }: WsContextContract, reason: string) {
+    const user = await User.findOrFail(auth.user!.id)
+    user.status = 'offline'
+    await user.save()
+
     const room = this.getUserRoom(auth.user!)
     const userSockets = await socket.in(room).allSockets()
 
@@ -57,5 +67,13 @@ export default class ActivityController {
     const user = await User.findOrFail(auth.user!.id)
     user.notifications = notifications
     await user.save()
+  }
+
+  public async userStatus({ socket, auth }: WsContextContract, status: User['status']) {
+    const user = await User.findOrFail(auth.user!.id)
+    user.status = status
+    await user.save()
+
+    socket.broadcast.emit('user:status', { id: user.id, status })
   }
 }
