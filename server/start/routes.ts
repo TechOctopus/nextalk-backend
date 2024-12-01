@@ -32,6 +32,7 @@ Ws.namespace('/')
   .connected('ActivityController.onConnected')
   .disconnected('ActivityController.onDisconnected')
   .on('userNotifications', 'ActivityController.userNotifications')
+  .on('userStatus', 'ActivityController.userStatus')
 
 Ws.namespace('channels')
   .on('loadChannels', 'ChannelController.loadChannels')
