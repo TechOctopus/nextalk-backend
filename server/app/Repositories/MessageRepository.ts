@@ -82,7 +82,8 @@ export default class MessageRepository implements MessageRepositoryContract {
             await message.related('mentions').attach([mentionedUser.id])
             mentionsUsers.push(mentionedUser)
           } catch (error) {
-            console.log(error)
+            // User mentioned in message does not exist, so we just ignore it
+            // but maybe in future we can handle it in some way
           }
         })
       )
