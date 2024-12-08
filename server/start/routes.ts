@@ -31,6 +31,8 @@ Route.group(() => {
 Ws.namespace('/')
   .connected('ActivityController.onConnected')
   .disconnected('ActivityController.onDisconnected')
+  .on('userNotifications', 'ActivityController.userNotifications')
+  .on('userStatus', 'ActivityController.userStatus')
 
 Ws.namespace('channels')
   .on('loadChannels', 'ChannelController.loadChannels')
@@ -40,7 +42,12 @@ Ws.namespace('channels')
   .on('inviteUser', 'ChannelController.inviteUser')
   .on('revokeUser', 'ChannelController.revokeUser')
   .on('kickUser', 'ChannelController.kickUser')
+  .on('listUsers', 'ChannelController.listUsers')
 
 Ws.namespace('channels/:name')
   .on('loadMessages', 'MessageController.loadMessages')
   .on('addMessage', 'MessageController.addMessage')
+
+Ws.namespace('typing/:name')
+  .on('typing', 'TypingController.typing')
+  .on('stopTyping', 'TypingController.stopTyping')

@@ -5,6 +5,9 @@ import type {
 import Channel from 'App/Models/Channel'
 import User from 'App/Models/User'
 import Action from 'App/Models/Action'
+import Message from 'App/Models/Message'
+
+const LIMIT = 10
 
 export default class MessageRepository implements MessageRepositoryContract {
   private parseMentions(message: string): string[] {
@@ -26,14 +29,21 @@ export default class MessageRepository implements MessageRepositoryContract {
       .join(' ')
   }
 
-  public async getAll(channelName: string): Promise<SerializedMessage[]> {
+  public async getAll(channelName: string, offset: number): Promise<SerializedMessage[]> {
     const channel = await Channel.query()
       .where('name', channelName)
       .preload('messages', (messagesQuery) => messagesQuery.preload('author'))
       .firstOrFail()
 
+    const messages = await Message.query()
+      .where('channel_id', channel.id)
+      .orderBy('created_at', 'desc')
+      .preload('author')
+      .limit(LIMIT)
+      .offset(offset)
+
     const messagesData = await Promise.all(
-      channel.messages.map(async (message) => {
+      messages.map(async (message) => {
         const mentions = await message.related('mentions').query()
         return {
           id: message.id,
@@ -47,7 +57,7 @@ export default class MessageRepository implements MessageRepositoryContract {
       })
     )
 
-    return messagesData
+    return messagesData.reverse()
   }
 
   public async create(
@@ -72,7 +82,8 @@ export default class MessageRepository implements MessageRepositoryContract {
             await message.related('mentions').attach([mentionedUser.id])
             mentionsUsers.push(mentionedUser)
           } catch (error) {
-            console.log(error)
+            // User mentioned in message does not exist, so we just ignore it
+            // but maybe in future we can handle it in some way
           }
         })
       )
